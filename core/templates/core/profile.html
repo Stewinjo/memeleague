@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="profile">
+    <h2>Manage Your Profile</h2>
+    <form method="POST" enctype="multipart/form-data" action="{% url 'core:profile' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+    <form method="POST" action="{% url 'core:delete_account' %}">
+        {% csrf_token %}
+        <button type="submit" class="delete-button">Delete Account</button>
+    </form>
+</div>
+{% endblock %}

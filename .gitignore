@@ -1,0 +1,27 @@
+# Python-specific
+*.pyc
+*.pyo
+__pycache__/
+*.db
+*.sqlite3
+.cache
+
+# Django-specific
+/staticfiles/
+/media/
+*.log
+
+# Environment
+.env
+.venv/
+*.swp
+
+# IDE-specific
+.vscode/
+.idea/
+
+# Ansible-specific
+.ansible
+
+# Linuxhome-specific
+.bash*

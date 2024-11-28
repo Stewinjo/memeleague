@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Guest Entry{% endblock %}
+
+{% block content %}
+<div class="guest-entry">
+    <h2>Play as a Guest</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="username">Choose a username:</label>
+        <input type="text" name="username" id="username" required>
+
+        <label for="profile-pic">Select a profile picture:</label>
+        <select name="profile_pic" id="profile-pic">
+            <option value="avatar1">Avatar 1</option>
+            <option value="avatar2">Avatar 2</option>
+            <option value="avatar3">Avatar 3</option>
+        </select>
+        <button type="submit" class="button">Start Playing</button>
+    </form>
+</div>
+{% endblock %}

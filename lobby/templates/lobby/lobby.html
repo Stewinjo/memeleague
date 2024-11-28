@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Lobby{% endblock %}
+
+{% block content %}
+<div class="lobby">
+    <h2>Lobby Code: {{ lobby.code }}</h2>
+    <p>Players:</p>
+    <ul>
+        {% for player in players %}
+        <li>{{ player.username }}</li>
+        {% endfor %}
+    </ul>
+    <form method="POST" action="{% url 'lobby:start_game' lobby.code %}">
+        {% csrf_token %}
+        <button type="submit" class="button" {% if players|length < 2 %}disabled{% endif %}>Start Game</button>
+    </form>
+</div>
+{% endblock %}

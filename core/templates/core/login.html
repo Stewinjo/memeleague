@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="login">
+    <h2>Login</h2>
+    <form method="POST" action="{% url 'core:login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if show_captcha %}
+            <div>
+                {{ captcha }}
+            </div>
+        {% endif %}
+        <button type="submit">Log In</button>
+    </form>
+    <p>Don't have an account? <a href="{% url 'core:register' %}">Register here</a>.</p>
+</div>
+{% endblock %}

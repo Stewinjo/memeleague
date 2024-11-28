@@ -1,0 +1,6 @@
+Django
+daphne
+channels
+mariadb==1.1.11
+redis
+python-decouple

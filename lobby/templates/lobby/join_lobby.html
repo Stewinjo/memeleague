@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Join Lobby{% endblock %}
+
+{% block content %}
+<div class="join-lobby">
+    <h2>Join a Lobby</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="lobby-code">Enter Lobby Code:</label>
+        <input type="text" name="lobby_code" id="lobby-code" maxlength="6" required>
+        <button type="submit" class="button">Join Lobby</button>
+    </form>
+</div>
+{% endblock %}

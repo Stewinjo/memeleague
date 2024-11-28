@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="home">
+    <h2>Welcome to MemeLeague!</h2>
+    <p>Your gateway to fun and creativity!</p>
+    <div class="actions">
+        <a href="{% url 'core:login' %}" class="button">Login</a>
+        <a href="{% url 'core:register' %}" class="button">Register</a>
+        <a href="{% url 'core:guest_entry' %}" class="button">Play as Guest</a>
+    </div>
+</div>
+{% endblock %}
