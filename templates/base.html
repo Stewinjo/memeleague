@@ -1,50 +1,78 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}MemeLeague{% endblock %}</title>
-
-    <!-- Favicon links -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/favicon-32x32.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/favicon-16x16.png' %}">
-    <link rel="manifest" href="{% static 'icons/site.webmanifest' %}">
-
-    <!-- Other assets like CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        @font-face {
-            font-family: 'Fredoka';
-            src: url("{% static 'fonts/Fredoka-VariableFont_wdth,wght.ttf' %}");
-        }
-        body {
-            font-family: 'Fredoka', sans-serif;
-        }
-    </style>
+    <link rel="icon" href="{% static 'icons/favicon.ico' %}">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}">
+    <title>{% block title %}MemeLeague{% endblock %}</title>
 </head>
 <body>
     <header>
-        <h1>MemeLeague</h1>
         <nav>
-            <ul>
+            <div class="header-container">
                 {% if user.is_authenticated %}
-                    <li><a href="{% url 'core:profile' %}">Profile</a></li>
-                    <li><a href="{% url 'core:logout' %}">Logout</a></li>
+                    <a href="{% url 'core:profile' %}">Lobby</a>
+                    <a href="{% url 'core:profile' %}">Profile</a>
+                    <a href="{% url 'core:logout' %}">Logout</a>
+                {% elif "guest_username" in request.session %}
+                    <a href="{% url 'core:profile' %}">Lobby</a>
+                    <a href="{% url 'core:login' %}">Login</a>
+                    <a href="{% url 'core:register' %}">Register</a>
                 {% else %}
-                    <li><a href="{% url 'core:login' %}">Login</a></li>
-                    <li><a href="{% url 'core:register' %}">Register</a></li>
+                    <a href="{% url 'core:login' %}">Login</a>
+                    <a href="{% url 'core:register' %}">Register</a>
                 {% endif %}
-            </ul>
+            </div>
         </nav>
     </header>
     <main>
+        <div id="cookie-banner" class="cookie-banner {% if not show_cookie_banner %}hidden{% endif %}">
+            <div class="cookie-banner-content">
+                <p>We use cookies to enhance your experience and analyze site usage. By clicking "Accept", you agree to the use of cookies as described in our
+                    <a href="{% url 'core:privacy_policy' %}" target="_blank">Privacy Policy</a>.
+                </p>
+                <button id="accept-cookies">Accept</button>
+            </div>
+        </div>
         {% block content %}
         {% endblock %}
     </main>
     <footer>
-        <p>&copy; 2024 MemeLeague</p>
+        <p>&copy; {{ year|default:2024 }} MemeLeague. Content is protected under copyright law.</p>
+        <p>
+            <a href="{% url 'core:impressum' %}">Impressum</a> |
+            <a href="{% url 'core:privacy_policy' %}">Privacy Policy</a> |
+            <a href="{% url 'core:terms_of_service' %}">Terms of Service</a>
+        </p>
+        {% if not user.is_authenticated %}
+            <p>Guest users may experience limited features. <a href="{% url 'core:register' %}">Register now!</a></p>
+        {% endif %}
     </footer>
 </body>
 </html>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const cookieBanner = document.getElementById("cookie-banner");
+        const acceptCookies = document.getElementById("accept-cookies");
+
+        // Check if cookies have already been accepted
+        const cookiesAccepted = localStorage.getItem("cookiesAccepted");
+
+        if (cookiesAccepted === "true") {
+            cookieBanner.style.display = "none"; // Hide banner if cookies are accepted
+        } else {
+            cookieBanner.style.display = "flex"; // Show banner if cookies are not accepted
+        }
+
+        // Set consent when the "Accept" button is clicked
+        acceptCookies.addEventListener("click", () => {
+            localStorage.setItem("cookiesAccepted", "true");
+            cookieBanner.style.display = "none"; // Hide the banner
+        });
+    });
+</script>

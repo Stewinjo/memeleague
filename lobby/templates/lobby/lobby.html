@@ -1,19 +1,198 @@
 {% extends "base.html" %}
 
-{% block title %}Lobby{% endblock %}
+{% block title %}Lobby Dashboard{% endblock %}
 
 {% block content %}
-<div class="lobby">
-    <h2>Lobby Code: {{ lobby.code }}</h2>
-    <p>Players:</p>
-    <ul>
-        {% for player in players %}
-        <li>{{ player.username }}</li>
-        {% endfor %}
-    </ul>
-    <form method="POST" action="{% url 'lobby:start_game' lobby.code %}">
-        {% csrf_token %}
-        <button type="submit" class="button" {% if players|length < 2 %}disabled{% endif %}>Start Game</button>
-    </form>
+<div class="dashboard-container">
+    <!-- Display Lobby Code and Invite Link -->
+    <div class="lobby-info">
+        <h1>Lobby Code: {{ lobby.code }}</h1>
+        <p>Share this link to invite others:</p>
+        <a href="{% url 'lobby:join_with_code' lobby.code %}">{% url 'lobby:join_with_code' lobby.code %}</a>
+        <img src="{% url 'lobby:qr_code' lobby.code %}" alt="QR Code" class="qr-code">
+    </div>
+
+    <!-- Participants List -->
+    <div class="participants-section">
+        <h2>Participants</h2>
+        <ul id="participants-list">
+            {% for participant in participants %}
+            <li class="participant">
+                <div class="profile-picture-frame">
+                    <img src="{{ participant.profile_pic }}" alt="Profile Picture" class="profile-pic">
+                </div>
+                <span>{{ participant.name }}</span>
+            </li>
+            {% empty %}
+            <li>No participants have joined yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Host Controls -->
+    {% if is_host %}
+    <div class="host-controls">
+        <h2>Host Controls</h2>
+        <form method="POST" id="gamemode-form">
+            {% csrf_token %}
+
+            <!-- Game Mode Selection -->
+            <div class="form-group">
+                <label for="game_mode">Select Game Mode:</label>
+                <select id="game_mode" name="game_mode">
+                    {% for mode in gamemodes %}
+                    <option value="{{ mode.key }}">
+                        {{ mode.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Dynamic Gamemode Settings -->
+            <div id="gamemode-settings"></div>
+
+            <!-- Error Messages -->
+            <div id="form-errors" class="error-messages" style="color: red;"></div>
+
+            <!-- Start Game Button -->
+            <button type="submit" class="btn green" id="start-game-button" {% if not can_start_game %}disabled{% endif %}>
+                Start Game
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <!-- Waiting Room for Participants -->
+    <div class="waiting-room">
+        <h2>Waiting for the host to start the game...</h2>
+        <p>Invite your friends to join using the lobby code: <strong>{{ lobby.code }}</strong></p>
+        {% if can_start_game %}
+        <p>The host can start the game once ready.</p>
+        {% else %}
+        <p>At least 2 participants are required to start the game.</p>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const rawGamemodes = `{{ gamemodes|safe|escapejs }}`;
+
+        // Replace Python True/False/None with JavaScript true/false/null
+        const jsonFriendlyGamemodes = rawGamemodes
+            .replace(/'/g, '"')
+            .replace(/True/g, 'true')
+            .replace(/False/g, 'false')
+            .replace(/None/g, 'null');
+
+        const gamemodes = JSON.parse(jsonFriendlyGamemodes);
+        const settingsContainer = document.getElementById("gamemode-settings");
+        const gameModeSelect = document.getElementById("game_mode");
+        const formErrors = document.getElementById("form-errors");
+        const gamemodeForm = document.getElementById("gamemode-form");
+        const lobbyCode = "{{ lobby.code }}";
+
+        // Function to dynamically update the form's action attribute
+        const updateFormAction = () => {
+            const selectedMode = gameModeSelect.value.replace(/_/g, '-')
+            gamemodeForm.action = `/${selectedMode}/start/${lobbyCode}/`;
+        };
+
+        // Function to dynamically update the settings form
+        const updateSettingsForm = () => {
+            const selectedMode = gameModeSelect.value;
+            const modeSettings = gamemodes.find(mode => mode.key === selectedMode);
+
+            // Clear current settings
+            settingsContainer.innerHTML = "";
+            formErrors.textContent = ""; // Clear errors
+
+            // Populate settings for the selected gamemode
+            if (modeSettings) {
+                modeSettings.settings.forEach(setting => {
+                    const formGroup = document.createElement("div");
+                    formGroup.className = "form-group";
+
+                    const label = document.createElement("label");
+                    label.setAttribute("for", setting.key);
+                    label.textContent = setting.label;
+
+                    let input;
+                    if (setting.type === "number") {
+                        input = document.createElement("input");
+                        input.type = "number";
+                        input.min = setting.min;
+                        input.max = setting.max;
+                        input.value = setting.default;
+                    } else if (setting.type === "select") {
+                        input = document.createElement("select");
+                        setting.options.forEach(option => {
+                            const opt = document.createElement("option");
+                            opt.value = option.value;
+                            opt.textContent = option.label;
+                            input.appendChild(opt);
+                        });
+                        input.value = setting.default; // Set default value
+                    }
+
+                    input.id = setting.key;
+                    input.name = setting.key;
+
+                    formGroup.appendChild(label);
+                    formGroup.appendChild(input);
+                    settingsContainer.appendChild(formGroup);
+                });
+            }
+        };
+
+        // Initialize form action and settings
+        updateFormAction();
+        updateSettingsForm();
+
+        // Update form action and settings when gamemode changes
+        gameModeSelect.addEventListener("change", () => {
+            updateFormAction();
+            updateSettingsForm();
+        });
+    });
+
+    const socket = new WebSocket(`ws://${window.location.host}/ws/lobby/${lobbyCode}/`);
+
+    const participantsList = document.getElementById("participants-list");
+
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+
+        if (data.action === 'game_start' && data.redirect_url) {
+            // Redirect to the game interface
+            window.location.href = data.redirect_url;
+        } else if (data.action === 'update_participants') {
+            // Update participant list dynamically
+            participantsList.innerHTML = "";
+            data.participants.forEach(participant => {
+                const li = document.createElement("li");
+                li.className = "participant";
+
+                const profilePictureFrame = document.createElement("div");
+                profilePictureFrame.className = "profile-picture-frame";
+
+                const profilePic = document.createElement("img");
+                profilePic.className = "profile-pic";
+                profilePic.src = participant.profile_pic;
+
+                profilePictureFrame.appendChild(profilePic);
+
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = participant.name;
+
+                li.appendChild(profilePictureFrame);
+                li.appendChild(nameSpan);
+                participantsList.appendChild(li);
+            });
+        } else if (data.message) {
+            // Handle other messages
+            console.log(data.message);
+        }
+    };
+</script>
 {% endblock %}

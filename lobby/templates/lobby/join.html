@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h1>Join a Lobby</h1>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="POST">
+        {% csrf_token %}
+        <label for="lobby_code">Enter Lobby Code:</label>
+        <input type="text" id="lobby_code" name="lobby_code" maxlength="5" required>
+        <button type="submit" class="btn">Join Lobby</button>
+    </form>
+</div>
+{% endblock %}

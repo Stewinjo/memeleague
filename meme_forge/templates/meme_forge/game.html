@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}MemeForge Game{% endblock %}
+
+{% block content %}
+<div class="game-container">
+    <h1>MemeForge Game</h1>
+    <p>Lobby Code: {{ lobby.code }}</p>
+
+    <!-- Game UI (e.g., template display, submission form) -->
+    <div id="game-area">
+        <!-- Dynamically load game content here -->
+    </div>
+</div>
+
+<script>
+    const gameSocket = new WebSocket(`ws://${window.location.host}/ws/game/${lobbyCode}/`);
+
+    gameSocket.onmessage = function (event) {
+        const data = JSON.parse(event.data);
+
+        if (data.action === "meme_submission") {
+            console.log("New meme submitted:", data.data);
+            // Handle new meme submission
+        } else if (data.action === "vote") {
+            console.log("New vote:", data.data);
+            // Handle voting updates
+        }
+    };
+
+    gameSocket.onerror = function (error) {
+        console.error("WebSocket error:", error);
+    };
+
+</script>
+{% endblock %}

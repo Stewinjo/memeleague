@@ -1,74 +1,292 @@
-/* Define the Fredoka and Quicksand fonts */
-@font-face {
-    font-family: 'Fredoka';
-    src: url('/static/fonts/Fredoka-VariableFont_wdth,wght.ttf') format('truetype');
-    font-weight: 100 700;
-    font-style: normal;
+/* style.css */
+
+/* ========================= */
+/* Color Palette */
+/* ========================= */
+:root {
+    --primary-color: #BB86FC;
+    --primary-variant-color: #3700B3;
+    --secondary-color: #03DAC5;
+    --accent-color: #FF00E5;
+    --surface-color: #121212;
+    --surface-elevated-color: #1E1E1E;
+    --background-color: #121212;
+    --error-color: #CF6679;
+    --on-primary-color: #000000;
+    --on-secondary-color: #000000;
+    --on-background-color: #FFFFFF;
+    --on-surface-color: #FFFFFF;
+    --on-error-color: #000000;
+
+    /* Text Opacity */
+    --text-primary-opacity: rgba(255, 255, 255, 1);
+    --text-secondary-opacity: rgba(255, 255, 255, 0.7);
+    --text-disabled-opacity: rgba(255, 255, 255, 0.5);
 }
 
-@font-face {
-    font-family: 'Quicksand';
-    src: url('/static/fonts/Quicksand-VariableFont_wght.ttf') format('truetype');
-    font-weight: 300 700;
-    font-style: normal;
+/* ========================= */
+/* Global Reset */
+/* ========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* Apply Fredoka globally, with Quicksand as fallback */
+/* ========================= */
+/* Base Styles */
+/* ========================= */
 body {
-    font-family: 'Fredoka', 'Quicksand', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f9f9f9;
-    color: #333;
-}
-
-/* Header styles */
-header {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    padding: 1rem;
-    text-align: center;
-}
-
-header h1 {
-    font-size: 2.5rem;
-    margin: 0;
-}
-
-/* Navigation styles */
-nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 1rem 0;
+    font-family: "Fredoka", sans-serif;
+    color: var(--on-background-color);
+    background-color: var(--background-color);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+header {
+    font-family: "Fredoka", sans-serif;
+    color: var(--on-primary-color);
+    background-color: var(--primary-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+header > div {
+    text-align: center;
+    margin: 0 auto;
+}
+
+header nav {
+    display: flex;
     gap: 1rem;
 }
 
-nav a {
+header a {
+    color: var(--on-primary-color);
     text-decoration: none;
-    font-weight: 500;
-    color: #ecf0f1;
+    font-weight: bold;
 }
 
-nav a:hover {
-    color: #e74c3c;
+/* ========================= */
+/* Buttons */
+/* ========================= */
+button {
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-/* Footer styles */
-footer {
-    background-color: #34495e;
-    color: #ecf0f1;
+/* Specific Button Styles */
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
     text-align: center;
-    padding: 1rem;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+    text-decoration: none;
+    transition: background-color 0.3s ease-in-out;
 }
 
-/* Content area */
-main {
+.btn.red { background-color: #d82a2a; }
+.btn.red:hover { background-color: #b22222; }
+.btn.green { background-color: #28a745; }
+.btn.green:hover { background-color: #218838; }
+.btn.white { background-color: #ffffff; }
+.btn.white:hover { background-color: #d6d6d6; }
+.btn.black { background-color: #0c0c0c; }
+.btn.black:hover { background-color: #2c2c2c; }
+
+/* ========================= */
+/* Forms */
+/* ========================= */
+form {
+    max-width: 400px;
+    margin: 2rem auto;
+    background: var(--surface-elevated-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--text-primary-opacity);
+}
+
+form input,
+form select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--primary-variant-color);
+    border-radius: 5px;
+}
+
+/* ========================= */
+/* Cards */
+/* ========================= */
+.card {
+    background-color: var(--surface-elevated-color);
+    color: var(--on-surface-color);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 1rem 0;
+}
+
+/* ========================= */
+/* Footer */
+/* ========================= */
+footer {
+    background-color: var(--secondary-color);
+    color: var(--on-secondary-color);
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: auto;
+}
+
+/* ========================= */
+/* Home Container */
+/* ========================= */
+.home-container {
+    text-align: center;
+    background-color: var(--primary-color);
     padding: 2rem;
-    font-size: 1.2rem;
-    line-height: 1.6;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    margin: 2rem auto;
+}
+
+/* ========================= */
+/* Profile Picture & Popup */
+/* ========================= */
+.profile-picture-frame {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    border: 3px solid var(--primary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+}
+
+.profile-picture-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--surface-color);
+    border: 3px solid var(--primary-color);
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+}
+
+.popup-content img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.popup-profile-pic {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    cursor: pointer;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.popup-profile-pic:hover, .profile-picture-frame:hover {
+    transform: scale(1.1);
+    border-color: var(--primary-variant-color);
+}
+
+.popup.active {
+    display: block;
+}
+
+/* ========================= */
+/* Username Section */
+/* ========================= */
+.username-section {
+    margin-top: 1rem;
+    padding: 1rem;
+}
+
+input[type="text"] {
+    padding: 0.5rem;
+    color: var(--on-primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    text-align: center;
+    font-size: 1rem;
+    width: 80%;
+    margin-top: 0.5rem;
+}
+
+.username-input-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#username {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+}
+
+.reroll-btn {
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.reroll-btn:hover {
+    background-color: var(--secondary-color);
 }

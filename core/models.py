@@ -2,7 +2,18 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class CustomUser(AbstractUser):
-    profile_picture = models.CharField(max_length=255, blank=True, null=True)
+    profile_picture = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Path to the profile picture file."
+    )
+
+    pb_meme_forge = models.IntegerField(
+        blank=True,
+        null=True,
+        help_text="Personalbest for MemeForge gamemode."
+    )
 
     # Override related_name attributes to avoid reverse accessor clashes
     groups = models.ManyToManyField(

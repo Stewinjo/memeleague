@@ -63,26 +63,7 @@ class UpdateProfileForm(forms.ModelForm):
         model = CustomUser
         fields = ['username', 'email', 'profile_picture']
 
-class ProfileForm(UserChangeForm):
-    profile_picture = forms.ChoiceField(
-        choices=[],
-        label="Profile Picture",
-        widget=forms.RadioSelect,
-        required=False,
-    )
-
+class ProfileForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'email', 'profile_picture']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Dynamically populate the profile picture choices
-        self.fields['profile_picture'].choices = [
-            (f'profile_pics/{img}', img) for img in self.get_profile_pics()
-        ]
-
-    def get_profile_pics(self):
-        import os
-        profile_pics_dir = os.path.join('static', 'profile_pics')
-        return os.listdir(profile_pics_dir)
+        fields = ['username', 'email']

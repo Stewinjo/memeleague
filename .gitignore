@@ -5,6 +5,7 @@ __pycache__/
 *.db
 *.sqlite3
 .cache
+.python_history
 
 # Django-specific
 /staticfiles/
@@ -25,3 +26,4 @@ __pycache__/
 
 # Linuxhome-specific
 .bash*
+.viminfo

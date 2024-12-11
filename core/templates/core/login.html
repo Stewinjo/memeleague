@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div class="login">
-    <h2>Login</h2>
-    <form method="POST" action="{% url 'core:login' %}">
+<div class="card">
+    <h2>Log In</h2>
+    <form method="POST" action="">
         {% csrf_token %}
         {{ form.as_p }}
+        <input type="hidden" name="next" value="{{ next }}">
         {% if show_captcha %}
-            <div>
-                {{ captcha }}
-            </div>
+        <p class="error">Please complete the CAPTCHA below.</p>
         {% endif %}
         <button type="submit">Log In</button>
     </form>
-    <p>Don't have an account? <a href="{% url 'core:register' %}">Register here</a>.</p>
+    <p>Don't have an account? <a href="{% url 'core:register' %}?next={{ next }}">Register here</a>.</p>
 </div>
 {% endblock %}

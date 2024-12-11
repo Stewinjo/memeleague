@@ -21,9 +21,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('core.urls')),
-    path('lobby/', include('lobby.urls')),
-    #path('meme-forge/', include('meme_forge.urls')),
+    path('', include('core.urls', namespace='core')),
+    path('lobby/', include('lobby.urls', namespace='lobby')),
+    path('meme-forge/', include('meme_forge.urls')),
     path('captcha/', include('captcha.urls')),
 ]
 

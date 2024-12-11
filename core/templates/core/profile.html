@@ -1,16 +1,21 @@
 {% extends "base.html" %}
 {% block title %}Profile{% endblock %}
 {% block content %}
-<div class="profile">
-    <h2>Manage Your Profile</h2>
-    <form method="POST" enctype="multipart/form-data" action="{% url 'core:profile' %}">
+<div class="card">
+    <h2>Manage Profile</h2>
+    <form method="POST" action="{% url 'core:profile' %}" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
+        <label for="profile_picture">Select Profile Picture:</label>
+        <div class="profile-pics">
+            {% for pic in profile_pictures %}
+            <label>
+                <input type="radio" name="profile_picture" value="{{ pic }}" {% if user.profile_picture == pic %}checked{% endif %}>
+                <img src="{% static 'images/profile_pics/'|add:pic %}" alt="Profile Picture">
+            </label>
+            {% endfor %}
+        </div>
         <button type="submit">Save Changes</button>
-    </form>
-    <form method="POST" action="{% url 'core:delete_account' %}">
-        {% csrf_token %}
-        <button type="submit" class="delete-button">Delete Account</button>
     </form>
 </div>
 {% endblock %}

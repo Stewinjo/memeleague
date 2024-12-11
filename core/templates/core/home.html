@@ -1,15 +1,116 @@
 {% extends "base.html" %}
-
-{% block title %}Home{% endblock %}
-
+{% load static %}
+{% block title %}MemeLeague Home{% endblock %}
 {% block content %}
-<div class="home">
-    <h2>Welcome to MemeLeague!</h2>
-    <p>Your gateway to fun and creativity!</p>
-    <div class="actions">
-        <a href="{% url 'core:login' %}" class="button">Login</a>
-        <a href="{% url 'core:register' %}" class="button">Register</a>
-        <a href="{% url 'core:guest_entry' %}" class="button">Play as Guest</a>
+<div class="home-container">
+    <div>
+        <h1>Welcome to MemeLeague!</h1>
+        <p>Your gateway to fun and creativity!</p>
     </div>
+    <!-- Player -->
+    <form method="POST" action="{% url 'core:home' %}" class="profile-section">
+        {% csrf_token %}
+        <div class="profile-section">
+            <h1>Join as a Player:</h1>
+            <!-- Profile Picture Frame -->
+            <div class="profile-picture-frame" id="profile-picture-frame">
+                <!-- Display the initially selected profile picture -->
+                <img src="{{ selected_profile_pic }}" alt="Profile Picture" id="selected-profile-pic">
+                <input type="hidden" name="profile_picture" value="{{ selected_profile_pic }}">
+            </div>
+
+            <!-- Username Input -->
+            <div class="username-section">
+                <div class="username-input-group">
+                    <input type="text" id="username" name="username" value="{{ random_username }}">
+                    <button id="reroll-username" class="reroll-btn"><i class="fas fa-sync-alt"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popup for Profile Picture Selector -->
+        <div class="popup hidden" id="profile-popup">
+            <div class="popup-content">
+                {% for pic in profile_pics %}
+                <img src="{% static 'images/profile_pics/' %}{{ pic }}" class="popup-profile-pic" data-pic="{{ pic }}" alt="Profile Picture">
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Hidden Field for Next URL -->
+        <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+        <!-- Buttons -->
+        <div class="button-group">
+            <a href="{% url 'core:register' %}?next={{ request.GET.next|urlencode }}" class="btn red">Register</a>
+            <button type="submit" name="continue_as_guest" class="btn green">Continue as Guest</button>
+            <a href="{% url 'core:login' %}?next={{ request.GET.next|urlencode }}" class="btn red">Login</a>
+        </div>
+    </form>
+    <!-- Host -->
+    <a href="{% url 'lobby:create' %}" class="btn green">Host a Lobby for your Party!</a>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const rerollButton = document.getElementById("reroll-username");
+        const usernameField = document.getElementById("username");
+
+        rerollButton.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            fetch("{% url 'core:generate_username' %}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.username) {
+                        usernameField.value = data.username;
+                    } else {
+                        alert("Error generating username. Please try again.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching new username:", error);
+                });
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const profilePictureFrame = document.getElementById("profile-picture-frame");
+        const profilePopup = document.getElementById("profile-popup");
+        const popupProfilePics = document.querySelectorAll(".popup-profile-pic");
+        const selectedProfilePic = document.getElementById("selected-profile-pic");
+
+        // Show popup when the profile picture is clicked
+        profilePictureFrame.addEventListener("click", () => {
+            if (profilePopup.classList.contains("active")) {
+                // If the popup is already open, close it
+                profilePopup.classList.remove("active");
+            } else {
+                // Otherwise, open the popup
+                profilePopup.classList.add("active");
+            }
+        });
+
+        // Close popup when "Escape" key is pressed
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && profilePopup.classList.contains("active")) {
+                profilePopup.classList.remove("active");
+            }
+        });
+
+        // Update selected profile picture
+        popupProfilePics.forEach((pic) => {
+            pic.addEventListener("click", (event) => {
+                const newPicSrc = event.target.getAttribute("src");
+                selectedProfilePic.setAttribute("src", newPicSrc);
+
+                // Optional: Update hidden input field for form submission
+                const profilePicInput = document.querySelector("input[name='profile_picture']");
+                if (profilePicInput) {
+                    profilePicInput.value = event.target.getAttribute("data-pic");
+                }
+
+                profilePopup.classList.remove("active"); // Close the popup
+            });
+        });
+    });
+</script>
 {% endblock %}
