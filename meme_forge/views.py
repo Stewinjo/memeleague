@@ -173,43 +173,27 @@ def start_game(request: HttpResponse, lobby_code):
         if not lobby:
             return JsonResponse({"error": "Lobby not found"}, status=404)
 
-        # Ensure the request is made by the host
+        # Ensure host is starting the game
         if request.session.get("host_lobby_code") != lobby_code:
             return JsonResponse({"error": "Only the host can start the game."}, status=403)
 
+        # Initialize the game mode
         memeforge = MemeForge.from_post_request(request)
-
         if memeforge:
-            # Assign the game mode to the lobby and mark the game as started
             lobby.gamemode = memeforge
             lobby.game_started = True
-
-            # Select and load templates into Redis
-            participants = len(lobby.participants)
-            templates = select_templates(
-                participants, memeforge.rounds, memeforge.rerolls_per_player, memeforge.template_constraints
-            )
-            load_templates_to_redis(lobby_code, templates)
-
-            # Save the updated lobby to Redis
             save_lobby_to_redis(lobby)
 
-            # Notify all participants via WebSocket
+            # Notify participants via WebSocket
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 f"lobby_{lobby_code}",
                 {
                     "type": "game_start",
-                    "message": {
-                        "redirect_url": f"/meme-forge/game/{lobby_code}/",
-                    },
-                },
+                    "redirect_url": f"/meme-forge/game/{lobby_code}/"
+                }
             )
-
-            return JsonResponse({"message": "Game started", "redirect_url": f"/memeforge/game/{lobby_code}/"})
-        else:
-            return JsonResponse({"error": "Invalid game mode settings."}, status=400)
-
+            return JsonResponse({"message": "Game started", "redirect_url": f"/meme-forge/game/{lobby_code}/"})
     return JsonResponse({"error": "Invalid request method."}, status=405)
 
 def vote_meme(request:HttpResponse, lobby_code):

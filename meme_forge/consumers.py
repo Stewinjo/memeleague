@@ -1,35 +1,37 @@
-import json
-from lobby.consumers import GamemodeConsumer
+from lobby.consumers import LobbyConsumer
 
-class MemeForgeConsumer(GamemodeConsumer):
-    """
-    Consumer for the MemeForge gamemode.
-    Inherits logic from GamemodeConsumer.
-    """
+class MemeForgeConsumer(LobbyConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
-        action = data.get('action')
+        action = data['action']
 
         if action == "submit_meme":
             meme_data = data['meme']
             await self.channel_layer.group_send(
-                self.game_group_name,
+                self.group_name,
                 {
-                    'type': 'game_message',
-                    'action': 'meme_submission',
+                    'type': 'meme_submission',
                     'meme': meme_data
                 }
             )
         elif action == "vote_meme":
             vote_data = data['vote']
             await self.channel_layer.group_send(
-                self.game_group_name,
+                self.group_name,
                 {
-                    'type': 'game_message',
-                    'action': 'vote',
+                    'type': 'vote_cast',
                     'vote': vote_data
                 }
             )
 
-        # Call parent receive for additional actions
-        await super().receive(text_data)
+    async def meme_submission(self, event):
+        await self.send(text_data=json.dumps({
+            'action': 'meme_submission',
+            'meme': event['meme']
+        }))
+
+    async def vote_cast(self, event):
+        await self.send(text_data=json.dumps({
+            'action': 'vote',
+            'vote': event['vote']
+        }))

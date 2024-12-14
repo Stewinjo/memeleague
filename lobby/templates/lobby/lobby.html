@@ -158,41 +158,36 @@
 
     const socket = new WebSocket(`ws://${window.location.host}/ws/lobby/${lobbyCode}/`);
 
-    const participantsList = document.getElementById("participants-list");
-
     socket.onmessage = function(event) {
         const data = JSON.parse(event.data);
 
-        if (data.action === 'game_start' && data.redirect_url) {
-            // Redirect to the game interface
-            window.location.href = data.redirect_url;
-        } else if (data.action === 'update_participants') {
-            // Update participant list dynamically
-            participantsList.innerHTML = "";
+        if (data.action === "update_participants") {
+            // Update the participants list dynamically
+            const participantsList = document.getElementById("participants-list");
+            participantsList.innerHTML = ""; // Clear existing participants
             data.participants.forEach(participant => {
                 const li = document.createElement("li");
-                li.className = "participant";
-
-                const profilePictureFrame = document.createElement("div");
-                profilePictureFrame.className = "profile-picture-frame";
-
-                const profilePic = document.createElement("img");
-                profilePic.className = "profile-pic";
-                profilePic.src = participant.profile_pic;
-
-                profilePictureFrame.appendChild(profilePic);
-
-                const nameSpan = document.createElement("span");
-                nameSpan.textContent = participant.name;
-
-                li.appendChild(profilePictureFrame);
-                li.appendChild(nameSpan);
+                li.textContent = participant;
                 participantsList.appendChild(li);
             });
-        } else if (data.message) {
-            // Handle other messages
-            console.log(data.message);
+        } else if (data.action === "chat_message") {
+            // Display chat messages
+            const chatBox = document.getElementById("chat-box");
+            const message = document.createElement("div");
+            message.textContent = data.message;
+            chatBox.appendChild(message);
         }
     };
+
+    // Send a chat message
+    const chatInput = document.getElementById("chat-input");
+    const chatSendButton = document.getElementById("chat-send");
+    chatSendButton.addEventListener("click", () => {
+        socket.send(JSON.stringify({
+            action: "send_message",
+            message: chatInput.value,
+        }));
+        chatInput.value = ""; // Clear input after sending
+    });
 </script>
 {% endblock %}

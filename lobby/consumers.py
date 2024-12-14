@@ -1,82 +1,88 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.conf import settings
+import redis
 
+# Redis client
+redis_client = redis.StrictRedis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB,
+    decode_responses=True
+)
 
 class LobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.lobby_code = self.scope['url_route']['kwargs']['lobby_code']
-        self.group_name = f"lobby_{self.lobby_code}"
+        self.lobby_group_name = f"lobby_{self.lobby_code}"
+        self.username = self.scope['user'].username if self.scope['user'].is_authenticated else "Guest"
 
-        # Join the lobby group
+        # Add user to Redis presence list
+        redis_client.sadd(f"lobby:{self.lobby_code}:users", self.username)
+
+        # Join lobby group
         await self.channel_layer.group_add(
-            self.group_name,
+            self.lobby_group_name,
             self.channel_name
         )
         await self.accept()
 
-        # Notify others about the new participant
-        await self.broadcast_participants_update()
+        # Notify all participants about the new user
+        await self.update_participants()
 
     async def disconnect(self, close_code):
+        # Remove user from Redis presence list
+        redis_client.srem(f"lobby:{self.lobby_code}:users", self.username)
+
         # Leave the lobby group
         await self.channel_layer.group_discard(
-            self.group_name,
+            self.lobby_group_name,
             self.channel_name
         )
 
-        # Notify others about the updated participant list
-        await self.broadcast_participants_update()
+        # Notify all participants about the user leaving
+        await self.update_participants()
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        action = data.get('action')
+        action = data.get("action")
 
-        if action == "update_participants":
-            # Optionally handle participant updates here
-            pass
+        if action == "send_message":
+            # Broadcast a chat message
+            message = data.get("message")
+            await self.channel_layer.group_send(
+                self.lobby_group_name,
+                {
+                    "type": "chat_message",
+                    "message": f"{self.username}: {message}",
+                }
+            )
 
-    async def broadcast_participants_update(self):
-        """
-        Fetch the current list of participants from a data source and broadcast it to the group.
-        """
-        # Replace with actual logic to fetch participants (e.g., from Redis)
-        participants = self.get_current_participants()
+    async def update_participants(self):
+        # Get all users from Redis
+        participants = list(redis_client.smembers(f"lobby:{self.lobby_code}:users"))
+
+        # Notify all clients about updated participants
         await self.channel_layer.group_send(
-            self.group_name,
+            self.lobby_group_name,
             {
-                "type": "lobby_update",
+                "type": "participants_update",
                 "participants": participants,
             }
         )
 
-    def get_current_participants(self):
-        """
-        Fetch the current participants. Replace with logic to retrieve participants from your data source.
-        """
-        # Dummy implementation
-        return [
-            {"name": "Player1", "profile_pic": "/static/images/player1.png"},
-            {"name": "Player2", "profile_pic": "/static/images/player2.png"},
-        ]
-
-    async def lobby_update(self, event):
-        """
-        Send participant list updates to clients.
-        """
-        participants = event['participants']
+    async def participants_update(self, event):
+        participants = event["participants"]
         await self.send(text_data=json.dumps({
             "action": "update_participants",
             "participants": participants,
         }))
 
-    async def game_start(self, event):
-        """
-        Notify clients to transition to the game interface.
-        """
-        redirect_url = event['redirect_url']
+    async def chat_message(self, event):
+        message = event["message"]
         await self.send(text_data=json.dumps({
-            "action": "game_start",
-            "redirect_url": redirect_url,
+            "action": "chat_message",
+            "message": message,
         }))
 
 class GamemodeConsumer(LobbyConsumer):
